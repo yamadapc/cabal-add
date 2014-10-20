@@ -8,7 +8,7 @@ import System.Exit (ExitCode(..), exitWith)
 data Options = Options { optionVerbose :: Bool
                        , optionVersion :: Bool
                        , optionHelp :: Bool
-                       , optionBuildTargets :: Maybe [String]
+                       , optionBuildTargets :: [String]
                        }
   deriving(Eq, Show)
 
@@ -16,7 +16,7 @@ defaultOptions :: Options
 defaultOptions = Options { optionVerbose = False
                          , optionVersion = False
                          , optionHelp = False
-                         , optionBuildTargets = Nothing
+                         , optionBuildTargets = []
                          }
 
 usage :: String
@@ -35,7 +35,7 @@ options = [ Option "v" ["verbose"]
               "Print this message and exit"
           , Option "t" ["targets"]
               (ReqArg
-                (\arg opts -> opts { optionBuildTargets = Just (splitCommas arg)
+                (\arg opts -> opts { optionBuildTargets = splitCommas arg
                                    })
                 "targets")
               "The build targets to add dependencies to separated by commas"
