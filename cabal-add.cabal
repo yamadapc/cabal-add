@@ -1,0 +1,33 @@
+name: cabal-add
+version: 0.1.0.0
+cabal-version: >=1.10
+build-type: Simple
+license: MIT
+license-file: LICENSE
+copyright: (c) 2014 Pedro Tacla Yamada <tacla.yamada@gmail.com>
+maintainer: Pedro Tacla Yamada <tacla.yamada@gmail.com>
+homepage: https://github.com/yamadapc/cabal-add
+synopsis: A command-line utility to quickly add dependencies to a
+          cabal project.
+description:
+    This is simply a port of Node.JS' `npm install --save-dev`
+    for use with cabal. The idea is you type:
+    `cabal-add <package>` and the latest version of `package`
+    gets installed and added to the cabal project in the
+    current directory.
+category: Development
+author: Pedro Tacla Yamada <tacla.yaamda@gmail.com>
+ 
+executable cabal-add
+    build-depends:
+        base >=4.7 && <4.8,
+        directory >=1.2 && <1.3,
+        filepath >=1.3 && <1.4,
+        text >=1.1 && <1.2,
+        Cabal -any
+    main-is: Main.hs
+    buildable: True
+    default-language: Haskell2010
+    hs-source-dirs: src
+ 
+ 
