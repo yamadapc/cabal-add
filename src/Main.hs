@@ -76,10 +76,10 @@ resolveDependencyVersion (Dependency name v) | v == anyVersion = do
         versions = map fst infos
 
     if null versions
-        then putStrLn ("No versions of " ++ display name ++ " currently available.\n"  ++
-                       "(I wanted to implement full-featured lookups but there's no\n" ++
-                       " way of doing it with the current `cabal-install` manifest.\n" ++
-                       " In other words, blame the cabal people :)") >>
+        then putStrLn ("No versions of " ++ DT.display name ++ " currently available. I wanted to \n" ++
+                       "implement full-featured lookups but there's no way of doing it with the current\n" ++
+                       "`cabal-install` manifest."
+             ) >>
              exitWith (ExitFailure 1)
         else let bestVersion = foldr1 biggerIsBetter versions
                in return $ Dependency name (withinVersion bestVersion)
