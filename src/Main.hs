@@ -1,16 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
-import Control.Monad (forM_, when)
-import Data.Text (Text(..))
+import Control.Arrow (second)
+import Control.Monad (when)
+import Data.Maybe (mapMaybe)
 import Distribution.Simple.Utils (tryFindPackageDesc)
-import Distribution.Package (Dependency(..), PackageName(..))
 import Distribution.PackageDescription hiding (options)
 import Distribution.PackageDescription.Parse (readPackageDescription)
 import Distribution.PackageDescription.PrettyPrint (writeGenericPackageDescription)
 import Distribution.Text (simpleParse)
 import Distribution.Verbosity (silent)
-import Distribution.Version (anyVersion)
 import System.Console.GetOpt (ArgDescr(..), ArgOrder(..), OptDescr(..),
                              getOpt, usageInfo)
 import System.Directory (getCurrentDirectory)
@@ -38,13 +37,14 @@ main = do
     -- Read the package description
     cwd <- getCurrentDirectory
     (desc, descPath) <- getDirPackageDesc cwd
-    logInfo opts ("Using cabal manifest: " ++ makeRelative cwd (descPath))
+    logInfo opts ("Using cabal manifest: " ++ makeRelative cwd descPath)
 
-    -- Find dependencies
-    deps <- mapM findDependency depNames
+    -- Find dependencies - TODO: Output errors on unparsed input, instead
+    --                     of this shitty solution
+    let deps = mapMaybe simpleParse depNames
 
     -- Update the package description
-    let desc' = desc { condExecutables = map (\(f, s) -> (f, addConstraints deps s))
+    let desc' = desc { condExecutables = map (second (addConstraints deps))
                                              (condExecutables desc)
                      }
 
@@ -106,11 +106,3 @@ getDirPackageDesc dir = do
     descPath <- tryFindPackageDesc dir
     desc <- readPackageDescription silent descPath
     return (desc, descPath)
-
-findDependency :: String -> IO Dependency
-findDependency _ = do
-    case simpleParse ("hzulip") of
-        Just packageName ->
-            return $ Dependency (packageName) (anyVersion)
-        Nothing ->
-            fail $ "Failed to parse "
