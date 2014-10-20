@@ -8,7 +8,7 @@ import System.Exit (ExitCode(..), exitWith)
 data Options = Options { optionVerbose :: Bool
                        , optionVersion :: Bool
                        , optionHelp :: Bool
-                       , optionBuildTarget :: Maybe String
+                       , optionBuildTargets :: Maybe [String]
                        }
   deriving(Eq, Show)
 
@@ -16,7 +16,7 @@ defaultOptions :: Options
 defaultOptions = Options { optionVerbose = False
                          , optionVersion = False
                          , optionHelp = False
-                         , optionBuildTarget = Nothing
+                         , optionBuildTargets = Nothing
                          }
 
 usage :: String
@@ -33,9 +33,12 @@ options = [ Option "v" ["verbose"]
           , Option "h" ["help"]
               (NoArg (\opts -> opts { optionHelp = True}))
               "Print this message and exit"
-          , Option "t" ["target"]
-              (ReqArg (\arg opts -> opts { optionBuildTarget = Just arg}) "target")
-              "The build target to add dependencies to"
+          , Option "t" ["targets"]
+              (ReqArg
+                (\arg opts -> opts { optionBuildTargets = Just (splitCommas arg)
+                                   })
+                "targets")
+              "The build targets to add dependencies to separated by commas"
           ]
 
 getOptions :: IO (Options, [String])
@@ -45,3 +48,8 @@ getOptions = do
         (opts, deps, []) -> return (foldr ($) defaultOptions opts, deps)
         (_, _, errs) -> putStr (concat errs ++ usage) >> exitWith (ExitFailure 1)
 
+splitCommas :: String -> [String]
+splitCommas = foldr helper []
+  where helper ',' xs   = "":xs
+        helper c (x:xs) = (c:x):xs
+        helper c []     = [c:""]
