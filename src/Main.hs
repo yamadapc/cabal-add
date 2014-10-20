@@ -162,20 +162,22 @@ addToTargets (t:ts) dep desc = addToTargets ts dep desc'
 
 -- |
 -- Adds a dependency constraint to a build node
-addConstraint :: a -> CondTree v [a] a1 -> CondTree v [a] a1
-addConstraint toAdd condt =
-    condt { condTreeConstraints = toAdd : condTreeConstraints condt }
+addConstraint :: Eq a => a -> CondTree v [a] a1 -> CondTree v [a] a1
+addConstraint toAdd condt = condt { condTreeConstraints = constraints' }
+  where constraints  = filter (/= toAdd) (condTreeConstraints condt)
+        constraints' = toAdd : constraints
 
 -- |
 -- `fmap`ed version of `addConstraint`
-addConstraintF :: Functor f => a -> f (CondTree v [a] a1) ->
-                                    f (CondTree v [a] a1)
+addConstraintF :: (Eq a, Functor f) => a -> f (CondTree v [a] a1) ->
+                                            f (CondTree v [a] a1)
 addConstraintF d = fmap (addConstraint d)
 
 -- |
 -- Doubly `fmap`ed version of `addConstraint`
-addConstraintFF :: (Functor f1, Functor f2) => a -> f2 (f1 (CondTree v [a] a1)) ->
-                                                    f2 (f1 (CondTree v [a] a1))
+addConstraintFF :: (Eq a, Functor f1, Functor f2) => a ->
+                                                     f2 (f1 (CondTree v [a] a1)) ->
+                                                     f2 (f1 (CondTree v [a] a1))
 addConstraintFF d = fmap (addConstraintF d)
 
 -- |
