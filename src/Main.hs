@@ -23,7 +23,7 @@ version :: String
 version = "0.1.0.0"
 
 -- |
--- The entry point
+-- The main action
 main :: IO ()
 main = do
     -- Use line buffering for better responsiveness
@@ -40,16 +40,9 @@ main = do
     (desc, descPath) <- getDirPackageDesc cwd
     logInfo opts ("Using cabal manifest: " ++ makeRelative cwd descPath)
 
+    -- Parse passed-in dependency names and add them to the manifest
     case partitionEithers $ map simpleParse' depNames of
-        -- TODO - refactor this soup
-        ([], deps) -> case optionBuildTargets opts of
-            [] ->
-              -- Ignore verbosity here, since this is important
-              foldM (\curDesc dep -> do
-                  putStrLn $ "Adding " ++ display dep ++ " to all targets"
-                  return $ addToAllTargets dep curDesc) desc deps >>=
-              writeGenericPackageDescription descPath
-            _ -> putStrLn "Unimplemented :P" >> exitWith (ExitFailure 1)
+        ([], deps) -> actionAddDependencies opts deps desc descPath
         (errs, _) -> forM_ errs putStrLn >> exitWith (ExitFailure 1)
 
 -- |
@@ -69,9 +62,23 @@ simpleParse' s = case simpleParse s of
     Nothing -> Left $ "Unable to parse " ++ s
 
 -- |
+-- The action for adding dependencies
+actionAddDependencies :: Options -> [Dependency] ->
+                         GenericPackageDescription -> FilePath -> IO ()
+actionAddDependencies opts deps desc descPath = case optionBuildTargets opts of
+    -- Ignore verbosity here, since this is important
+    [] -> foldM (\curDesc dep -> do
+              putStrLn $ "Adding " ++ display dep ++ " to all targets"
+              return $ addToAllTargets dep curDesc) desc deps >>=
+          writeGenericPackageDescription descPath
+    _  -> putStrLn "Unimplemented :P" >>
+          exitWith (ExitFailure 1)
+
+-- |
 -- Adds a dependency to all targets in a `GenericPackageDescription` and
 -- returns it updated
-addToAllTargets :: Dependency -> GenericPackageDescription -> GenericPackageDescription
+addToAllTargets :: Dependency -> GenericPackageDescription ->
+                   GenericPackageDescription
 addToAllTargets dep desc =
     -- Update the package description
     desc { condLibrary     = fmap (addConstraint dep) (condLibrary desc)
