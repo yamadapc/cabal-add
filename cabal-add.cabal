@@ -25,6 +25,7 @@ executable cabal-add
         filepath >=1.3 && <1.4,
         text >=1.1 && <1.2,
         Cabal -any
+        -- cabal-install -any
     main-is: Main.hs
     buildable: True
     default-language: Haskell2010

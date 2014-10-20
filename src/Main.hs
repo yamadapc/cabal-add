@@ -4,13 +4,20 @@ module Main where
 
 import Control.Monad (foldM, forM_, when)
 import Data.Either (partitionEithers)
+import Distribution.Compiler (buildCompilerFlavor)
+-- import Distribution.Client.IndexUtils (getSourcePackages)
 import Distribution.Package (Dependency(..))
 import Distribution.PackageDescription hiding (options)
 import Distribution.PackageDescription.Parse (readPackageDescription)
 import Distribution.PackageDescription.PrettyPrint (writeGenericPackageDescription)
+import Distribution.Simple.Compiler (PackageDB(..))
+import Distribution.Simple.Configure (getInstalledPackages, configCompilerEx)
+import Distribution.Simple.PackageIndex (lookupPackageName) -- , merge)
+import Distribution.Simple.Program (defaultProgramConfiguration)
 import Distribution.Simple.Utils (tryFindPackageDesc)
 import Distribution.Text (Text(..), simpleParse, display)
 import Distribution.Verbosity (silent)
+import Distribution.Version (anyVersion, withinVersion)
 import System.Directory (getCurrentDirectory)
 import System.Exit (ExitCode(..), exitSuccess, exitWith)
 import System.FilePath (makeRelative)
@@ -41,8 +48,37 @@ main = do
 
     -- Parse passed-in dependency names and add them to the manifest
     case partitionEithers $ map simpleParse' depNames of
-        ([], deps) -> actionAddDependencies opts deps desc descPath
+        ([], deps) -> do
+            deps' <- mapM resolveDependencyVersion deps
+            actionAddDependencies opts deps' desc descPath
         (errs, _) -> forM_ errs putStrLn >> exitWith (ExitFailure 1)
+
+-- |
+-- If no version is specified by the user, try narrowing down the version
+-- to the available packages and return an updated, narrower dependency
+resolveDependencyVersion :: Dependency -> IO Dependency
+resolveDependencyVersion (Dependency name v) | v == anyVersion = do
+    let dbStack = [GlobalPackageDB]
+    (compiler, _, configuration) <- configCompilerEx (Just buildCompilerFlavor)
+                                                     Nothing
+                                                     Nothing
+                                                     defaultProgramConfiguration
+                                                     silent
+
+    installedPackages <- getInstalledPackages silent
+                                              compiler
+                                              dbStack
+                                              configuration
+    -- sourcePackages <- getSourcePackages (undefined) (undefined)
+
+    let packages = installedPackages -- `merge` sourcePackages
+        infos = lookupPackageName packages name
+        bestVersion = foldr1 biggerIsBetter $ map fst infos
+
+    return $ Dependency name (withinVersion bestVersion)
+  -- This is just an example strategy for finding the best package
+  where biggerIsBetter c m = if c > m then c else m
+resolveDependencyVersion dep = return dep
 
 -- |
 -- Gets a package description corresponding to a certain directory, parses
