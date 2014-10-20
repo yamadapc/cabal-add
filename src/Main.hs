@@ -10,13 +10,12 @@ import Distribution.PackageDescription.Parse (readPackageDescription)
 import Distribution.PackageDescription.PrettyPrint (writeGenericPackageDescription)
 import Distribution.Text (simpleParse)
 import Distribution.Verbosity (silent)
-import System.Console.GetOpt (ArgDescr(..), ArgOrder(..), OptDescr(..),
-                             getOpt, usageInfo)
 import System.Directory (getCurrentDirectory)
-import System.Environment (getArgs)
 import System.Exit (ExitCode(..), exitSuccess, exitWith)
 import System.FilePath (makeRelative)
 import System.IO (BufferMode(..), hSetBuffering, stdout)
+
+import Options
 
 version :: String
 version = "0.1.0.0"
@@ -54,55 +53,15 @@ main = do
             condt { condTreeConstraints = toAdd ++ condTreeConstraints condt
                   }
 
-data Options = Options { optionVerbose :: Bool
-                       , optionVersion :: Bool
-                       , optionHelp :: Bool
-                       , optionBuildTarget :: Maybe String
-                       }
-  deriving(Eq, Show)
-
-defaultOptions :: Options
-defaultOptions = Options { optionVerbose = False
-                         , optionVersion = False
-                         , optionHelp = False
-                         , optionBuildTarget = Nothing
-                         }
-
-usage :: String
-usage = usageInfo header options
-  where header = "Usage: cabal-add [options...] dependencies..."
-
-options :: [OptDescr (Options -> Options)]
-options = [ Option "v" ["verbose"]
-              (NoArg (\opts -> opts { optionVerbose = True }))
-              "Be verbose"
-          , Option "V" ["version"]
-              (NoArg (\opts -> opts { optionVersion = True}))
-              "Print version and exit"
-          , Option "h" ["help"]
-              (NoArg (\opts -> opts { optionHelp = True}))
-              "Print this message and exit"
-          , Option "t" ["target"]
-              (ReqArg (\arg opts -> opts { optionBuildTarget = Just arg}) "target")
-              "The build target to add dependencies to"
-          ]
-
-getOptions :: IO (Options, [String])
-getOptions = do
-    args <- getArgs
-    case getOpt Permute options args of
-        (opts, deps, []) -> return (foldr ($) defaultOptions opts, deps)
-        (_, _, errs) -> putStr (concat errs ++ usage) >> exitWith (ExitFailure 1)
-
-logInfo :: Options -> String -> IO ()
-logInfo opts x | optionVerbose opts = putStrLn x
-               | otherwise          = return ()
-
 -- |
 -- Gets a package description corresponding to a certain directory, parses
--- and returns it.
+-- and returns it
 getDirPackageDesc :: FilePath -> IO (GenericPackageDescription, FilePath)
 getDirPackageDesc dir = do
     descPath <- tryFindPackageDesc dir
     desc <- readPackageDescription silent descPath
     return (desc, descPath)
+
+logInfo :: Options -> String -> IO ()
+logInfo opts x | optionVerbose opts = putStrLn x
+               | otherwise          = return ()
