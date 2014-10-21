@@ -76,7 +76,7 @@ resolveDependencyVersion (Dependency name v) | v == anyVersion = do
         versions = map fst infos
 
     if null versions
-        then putStrLn ("No versions of " ++ DT.display name ++ " currently available. I wanted to \n" ++
+        then putStrLn ("No versions of " ++ display name ++ " currently available. I wanted to \n" ++
                        "implement full-featured lookups but there's no way of doing it with the current\n" ++
                        "`cabal-install` manifest."
              ) >>
