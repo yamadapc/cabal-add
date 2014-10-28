@@ -12,7 +12,7 @@ import Distribution.PackageDescription.Parse (readPackageDescription)
 import Distribution.PackageDescription.PrettyPrint (writeGenericPackageDescription)
 import Distribution.Simple.Compiler (PackageDB(..))
 import Distribution.Simple.Configure (getInstalledPackages, configCompilerEx)
-import Distribution.Simple.PackageIndex (lookupPackageName) -- , merge)
+import Distribution.Simple.PackageIndex (PackageIndex, lookupPackageName, merge)
 import Distribution.Simple.Program (defaultProgramConfiguration)
 import Distribution.Simple.Utils (tryFindPackageDesc)
 import Distribution.Text (Text(..), simpleParse, display)
@@ -69,23 +69,23 @@ resolveDependencyVersion (Dependency name v) | v == anyVersion = do
                                               compiler
                                               dbStack
                                               configuration
-    -- sourcePackages <- getSourcePackages (undefined) (undefined)
+    sourcePackages <- getSourcePackages dbStack
 
-    let packages = installedPackages -- `merge` sourcePackages
+    let packages = installedPackages `merge` sourcePackages
         infos = lookupPackageName packages name
         versions = map fst infos
 
     if null versions
-        then putStrLn ("No versions of " ++ display name ++ " currently available. I wanted to \n" ++
-                       "implement full-featured lookups but there's no way of doing it with the current\n" ++
-                       "`cabal-install` manifest."
-             ) >>
+        then putStrLn ("Couldn't find " ++ display name) >>
              exitWith (ExitFailure 1)
         else let bestVersion = foldr1 biggerIsBetter versions
                in return $ Dependency name (withinVersion bestVersion)
   -- This is just an example strategy for finding the best package
   where biggerIsBetter c m = if c > m then c else m
 resolveDependencyVersion dep = return dep
+
+getSourcePackages :: [PackageDB] -> IO PackageIndex
+getSourcePackages = undefined
 
 -- |
 -- Gets a package description corresponding to a certain directory, parses
