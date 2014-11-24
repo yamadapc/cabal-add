@@ -1,5 +1,7 @@
 cabal-add
 =========
+[![Stories in Ready](https://badge.waffle.io/yamadapc/cabal-add.svg?label=ready&title=Ready)](http://waffle.io/yamadapc/cabal-add)
+- - -
 **WIP**
 
 An attempt to add a `npm install --save` like feature to `cabal`. Not yet
