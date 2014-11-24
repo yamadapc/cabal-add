@@ -84,6 +84,8 @@ resolveDependencyVersion (Dependency name v) | v == anyVersion = do
   where biggerIsBetter c m = if c > m then c else m
 resolveDependencyVersion dep = return dep
 
+-- |
+-- Get's packages from a PackageDB stack as a Lazy Map (not implemented)
 getSourcePackages :: [PackageDB] -> IO PackageIndex
 getSourcePackages = undefined
 
