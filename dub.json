@@ -1,8 +1,8 @@
 {
-	"name": "cabal-add",
-	"description": "A minimal D application.",
-	"copyright": "Copyright © 2015, yamadapc",
-	"authors": ["yamadapc"],
-	"dependencies": {
-	}
+  "name": "cabal-add",
+  "description": "Adds a dependency to a cabal file",
+  "copyright": "Copyright © 2015, Pedro Tacla Yamada",
+  "authors": ["Pedro Tacla Yamada"],
+  "dependencies": {
+  }
 }
