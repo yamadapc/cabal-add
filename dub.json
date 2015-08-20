@@ -1,0 +1,8 @@
+{
+	"name": "cabal-add",
+	"description": "A minimal D application.",
+	"copyright": "Copyright © 2015, yamadapc",
+	"authors": ["yamadapc"],
+	"dependencies": {
+	}
+}
