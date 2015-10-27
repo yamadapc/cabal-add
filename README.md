@@ -1,10 +1,10 @@
 # cabal-add
 Quickly add a dependency onto a cabal file. Initially implemented as a Haskell
-program, now it's a super simple (and probably broken in many ways) D script.
+program, now it's a super simple D script.
 
 ## Usage
 ```
-Usage: cabal-add <dependency> <cabal-file>
+Usage: cabal-add <dependency> [cabal-file]
 ```
 
 ## License

@@ -10,14 +10,14 @@ import std.uni : isWhite;
 
 int main(string[] args) {
   if(args.length < 2) {
-    stderr.writeln("Usage: cabal-add <dependency> <cabal-file>");
+    stderr.writeln("Usage: cabal-add <dependency> [cabal-file]");
     return 1;
   } else if(args.length < 3) {
     auto resolved = findCabalFile();
 
     if(resolved is null) {
-      stderr.writeln("Usage: cabal-add <dependency> <cabal-file>");
-      stderr.writeln("Error: No <cabal-file> provided and couldn't find it.");
+      stderr.writeln("Usage: cabal-add <dependency> [cabal-file]");
+      stderr.writeln("Error: No `cabal-file` provided or found");
       return 1;
     }
 
